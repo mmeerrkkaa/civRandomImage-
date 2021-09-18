@@ -1,94 +1,137 @@
+# -*- coding: utf-8 -*-
 from PIL import Image, ImageChops, ImageDraw, ImageFont, ImageOps
 import random
-from pymongo import MongoClient
-
-cluster = MongoClient(f"mongodb+srv://root:discordGPT@cluster0.ej8oe.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
-
-db = cluster['discord']
-collestionnation = db["nation"]
 
 
+
+def text_size(text, font):
+    width = font.getmask(text).getbbox()[2]
+    height = font.getmask(text).getbbox()[3]
+    return (width, height)
+
+
+
+
+
+size = [512, 152]
+size_nick = [0, 120]
+
+font = ImageFont.truetype("./civa.ttf", 28, encoding="unic")
 
 
 def nick_roll(nick, nomer):
 	nick = nick
 
-	img = Image.open(f"./back/back_nick.jpg").convert("RGBA").resize((512, 128))
+	img = Image.open(f"./back/back_nick.jpg").convert("RGBA").resize((512, size_nick[1]))
+
 	idraw = ImageDraw.Draw(img)
 
 	font = ImageFont.truetype("arial.ttf", size=30)
 
 	# рисуем по полям
-	idraw.rectangle((0, 0, 511, 127), outline=(0, 0, 0))
+	idraw.rectangle((0, 0, 511, size[1] - 1), outline=(0, 0, 0))
 
 	idraw.text((10, 10), f"({nomer})", "black", font=font)  # номер игрока
 
 	nicksize = 210
 
 
-	font = ImageFont.truetype("arial.ttf", size= round(32 - len(nick) / 5))
+	font = ImageFont.truetype("Pon.ttf", size= round(40 - len(nick) / 7), encoding="UTF-8")
 	#print(round(30 - len(nick) / 5))
 
 	nicksize = 250 - (len(nick) * 7 - (round(len(nick) / 5) * 6))
+
+	nicksize = 250 - (len(nick) - (len(nick)) // 2) * 22
 	
-	idraw.text((nicksize, 45), nick, "black", font=font)  # никнейм
+	
+	txt_width, txt_height = text_size(nick, font)
+
+#	draw_text = ImageDraw.Draw(image)
+	idraw.text((int(img.size[0]/2 - txt_width/2), int(img.size[1]/2 - txt_height/2) - 2), nick, font=font, fill=('#000000'))
+
+	
+	#idraw.text((nicksize, 45), nick, "black", font=font)  # никнейм
 	return img
 
 
 def nation_roll(country):
 	count = 1
 
-	img = Image.open(f"./back/back.jpg").convert("RGBA").resize((512, 128))
+	img = Image.open(f"./back/back.jpg").convert("RGBA").resize((512, size[1]))
+	#img = Image.open(f"./merka.jpg").convert("RGBA").resize((512, size[1]))
 	idraw = ImageDraw.Draw(img)
 	# иконки
-	flag = Image.open(f"./nation/{country}/flag.png").resize((90, 90))
-	leader = Image.open(f"./nation/{country}/leader.png").resize((80, 80))
-	# flag = ImageOps.fit(Image.open(f'./{country}/flag.png'), (90,90), Image.ANTIALIAS)
-	icon_1 = Image.open(f"./nation/{country}/unit_1.png").resize((55, 55))
-	# icon_1 = ImageOps.fit(Image.open(f'./{country}/unit_1.png'), (55,55), Image.ANTIALIAS)
-	icon_2 = Image.open(f"./nation/{country}/unit_2.png").resize((55, 55))
-
+	flag = Image.open(f"./nation/{country}/flag.png").resize((105, 105))
+	leader = Image.open(f"./nation/{country}/leader.png").resize((105, 105))
+	icon_1 = Image.open(f"./nation/{country}/unit_1.png").resize((80, 80))
 	
-	nat_bon = collestionnation.find_one({'name' : country})
-	bonus_text = str(nat_bon['text']) # загрузка из базы данных
+	icon_2 = Image.open(f"./nation/{country}/unit_2.png")
+
+	if icon_2.size[0] == 188:
+
+		icon_2 = icon_2.resize((55, 55))
+
+		icon_2.resize((icon_2.size[0] + 110, icon_2.size[1] + 110))
+		width = 5
+	else:
+		width = 0
+		icon_2 = icon_2.resize((80, 80))
 
 
-	font = ImageFont.truetype("verdana.ttf", size=30)
-	font_country = ImageFont.truetype("arial.ttf", size=20)
-	font_text = ImageFont.truetype("arial.ttf", size=15)
+
+	#font_country = ImageFont.truetype("arial.ttf", size=50)
+	font_text = ImageFont.truetype("arial.ttf", size=25)
 
 	# рисуем по полям
-	idraw.rectangle((0, 0, 511, 127), outline=(0, 0, 0))
+	idraw.rectangle((0, 0, 511, size[1] - 1), outline=(0, 0, 0))
 
-	if len(country) >= 10:
-		font_country = ImageFont.truetype("arial.ttf", size=15)
-		idraw.text((10, 10), country, "black", font=font_country)
+	font_country = ImageFont.truetype("arial.ttf", size=65 - ((len(country)) // 2) * 5,encoding='UTF-8',)
+
+	txt_width, txt_height = text_size(country, font_country)
+
+#	draw_text = ImageDraw.Draw(image)
+	idraw.text((int(img.size[0]/2 - txt_width/2) - 50, int(img.size[1]/2 - txt_height/2) - 4), country, font=font_country, fill=('#000000'))
+
+
+
+#	if len(country) == 3:
+#		idraw.text((150, 50), country, "black", font=font_country)
+#	else:
+	#	idraw.text((150 - (len(country) - (len(country)) // 2) * 11, 50), country, "black", font=font_country)
+	'''if len(country) >= 10:
+		font_country = ImageFont.truetype("arial.ttf", size=45)
+		idraw.text((100, 50), country, "black", font=font_country)
 
 	else:
-		idraw.text((15, 10), country, "black", font=font_country)
+		idraw.text((150, 50), country, "black", font=font_country)'''
 
-	idraw.text((230, 128 - 85), bonus_text, "black", font=font_text)
 
-	img.paste(flag, (10, 128 - 95), flag)
-	img.paste(icon_1, (110, 128 - 125), icon_1)
-	img.paste(icon_2, (110, 128 - 60), icon_2)
-	img.paste(leader, (150, 128 - 105), leader)
+
+	img.paste(flag, (400, size[1] - 133), flag)
+	img.paste(leader, (310, size[1] - 130), leader)
+
+	img.paste(icon_1, (7, size[1] - 155), icon_1)
+	img.paste(icon_2, (7 + width * 2, size[1] - 80 + width), icon_2)
+	
+
+
 	return img
 
 
 def roll_image(nick, count_nation, nomer, *country):
 	country = list(country[0])
-
-	img = Image.new("RGBA", (512, 128*(count_nation+1)), "white")
+	user = nick_roll(nick, nomer)
+	
+	img = Image.new("RGBA", (512, user.size[1]+size[1]*(count_nation)), "white")
 	idraw = ImageDraw.Draw(img)
 
-	user = nick_roll(nick, nomer)
+	
 	img.paste(user, (0, 0), user)
 
 
 	for i in range(count_nation):
 		roll_nation = nation_roll(country[i])
-		img.paste(roll_nation, (0, user.size[1] * (i+1)), roll_nation)
+		img.paste(roll_nation, (0, user.size[1] + size[1] * (i)), roll_nation)
 
 	return img
 
@@ -114,8 +157,8 @@ def rolls(nick, count_nation, *nation):
 	else:
 		width = len(nick)
 		lis = 1
-
-	img = Image.new("RGBA", (width * 512, (128 * (count_nation + 1)) * lis), "white")
+	print(size_nick)
+	img = Image.new("RGBA", (width * 512, ((size[1] * count_nation + size_nick[1]) * lis)), "white")
 	idraw = ImageDraw.Draw(img)
 
 
@@ -149,10 +192,11 @@ def roll(nick, count_nation, *nation):
 
 	img = rolls(nick, int(count_nation), nation[0])
 
-	img = img.resize((img.size[0], img.size[1]))
-
-	img.save("deathl0x.png")
+	img.save("de.png")
 
 
-#roll(["merka#7144", "Falsite#3123", "dsad", "4fdsf", "mmeerrkkaa", "vmekrkaaaadsadasdas"], 1, ["Америка", "Китай", "Дания", "Германия", "Египет", "Индия"])
+roll(["merka#7144", "Проверим", "fsdfgds", "dsaf", "mefdsfmmsdfkdkgf", "дез"], 3, ['Америка','Голландия', 'Вавилон', 'Испания', 'Кельты', 'Австрия','Япония', 'Индонезия', 'Персия', 'Майя', 'Англия', 'Византия', 'Сонгай', 'Россия', 'Рим', 'Польша', 'Франция', 'Китай', 'Швеция', 'Карфаген', 'Греция', 'Индия', 'Сиам', 'Бразилия', 'Египет', 'Шошоны', 'Турция', 'Корея', 'Зулусы', 'Марокко', 'Аравия', 'Полинезия', 'Инки', 'Дания', 'Ассирия', 'Монголия', 'Ирокезы', 'Эфиопия', 'Ацтеки', 'Португалия', 'Германия'])
+
+
+['Америка','Голландия', 'Вавилон', 'Испания', 'Кельты', 'Австрия','Япония', 'Индонезия', 'Персия', 'Майя', 'Англия', 'Византия', 'Сонгай', 'Россия', 'Рим', 'Польша', 'Франция', 'Китай', 'Швеция', 'Карфаген', 'Греция', 'Индия', 'Сиам', 'Бразилия', 'Египет', 'Шошоны', 'Турция', 'Корея', 'Зулусы', 'Марокко', 'Аравия', 'Полинезия', 'Инки', 'Дания', 'Ассирия', 'Монголия', 'Ирокезы', 'Эфиопия', 'Ацтеки', 'Португалия', 'Германия']
 
